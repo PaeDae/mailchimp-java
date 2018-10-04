@@ -1,8 +1,12 @@
-apply plugin: 'java'
-apply plugin: 'maven'
+plugins {
+    id 'java-library'
+    id 'groovy'
+    id 'maven'
+    id 'maven-publish'
+}
 
-group = "com.mailchimp"
-version = "0.5.4"
+group = "com.gimbal.mailchimp"
+version = "0.5.5-SNAPSHOT"
 
 compileJava {
     sourceCompatibility = 1.8
@@ -11,22 +15,80 @@ compileJava {
 
 repositories {
     mavenCentral()
-    maven { url "http://repo.spring.io/libs-milestone" }
 }
 
+configurations {
+    exampleImplementation
+}
 
 dependencies {
+    implementation('com.netflix.feign:feign-core:8.18.0')
+    implementation('com.fasterxml.jackson.core:jackson-databind:2.8.3')
+    implementation('commons-codec:commons-codec:1.10')
+    compileOnly("org.projectlombok:lombok:1.16.4")
+    annotationProcessor("org.projectlombok:lombok:1.16.4")
 
-    compile("org.projectlombok:lombok:1.16.4")
-    compile('com.netflix.feign:feign-core:8.18.0')
-    compile('com.fasterxml.jackson.core:jackson-databind:2.8.3')
-    compile('commons-codec:commons-codec:1.10')
+    testImplementation('junit:junit:4.12')
 
-    testCompile('junit:junit:4.12')
+    exampleImplementation('org.codehaus.groovy:groovy-all:2.4.15')
+}
+
+sourceSets {
+    example {
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += output + compileClasspath
+    }
+}
+
+task example(type: JavaExec) {
+    description = 'Runs the example script.'
+    group = 'other'
+    classpath = sourceSets.example.runtimeClasspath
+    main = 'com.mailchimp.Example'
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allJava
 }
 
 install {
     repositories.mavenInstaller {
-        pom.artifactId = "mailchimp-api"
+        pom.artifactId = "mailchimp-java"
+    }
+}
+
+
+
+publishing {
+    publications {
+        mailchimpApi(MavenPublication) {
+            artifactId = "mailchimp-java"
+            pom {
+                name = "MailChimp Java API"
+                description = "A Java wrapper around the MailChimp API"
+                url = "https://github.com/micheal-swiggs/mailchimp-java"
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+            }
+
+            from components.java
+            artifact sourcesJar
+        }
+    }
+
+    repositories {
+        maven {
+            name = 'mavenRepository'
+            url = version.endsWith('SNAPSHOT') ? mavenSnapshotRepository : mavenRepository
+            credentials {
+                username = mavenUsername
+                password = mavenPassword
+            }
+        }
     }
 }
