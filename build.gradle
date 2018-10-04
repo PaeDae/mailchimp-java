@@ -3,10 +3,8 @@ plugins {
     id 'groovy'
     id 'maven'
     id 'maven-publish'
+    id 'net.researchgate.release' version '2.5.0'
 }
-
-group = "com.gimbal.mailchimp"
-version = "0.5.5-SNAPSHOT"
 
 compileJava {
     sourceCompatibility = 1.8
@@ -58,8 +56,6 @@ install {
     }
 }
 
-
-
 publishing {
     publications {
         mailchimpApi(MavenPublication) {
@@ -91,4 +87,11 @@ publishing {
             }
         }
     }
+}
+
+release {
+    tagTemplate = 'v${version}'
+    versionPropertyFile = 'gradle.properties'
+    buildTasks = ['assemble']
+    git.requireBranch = 'master'
 }
