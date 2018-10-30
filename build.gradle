@@ -20,7 +20,7 @@ configurations {
 }
 
 dependencies {
-    implementation('com.netflix.feign:feign-core:8.18.0')
+    api('com.netflix.feign:feign-core:8.18.0')
     implementation('com.fasterxml.jackson.core:jackson-databind:2.8.3')
     implementation('commons-codec:commons-codec:1.10')
     compileOnly("org.projectlombok:lombok:1.16.4")
